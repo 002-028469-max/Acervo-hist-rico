@@ -1,0 +1,3 @@
+repository "Acervo Historico/Acervo Historico@4674182441046@cloud"
+  path "/"
+    smartbranch "/main"

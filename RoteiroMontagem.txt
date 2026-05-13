@@ -1,0 +1,172 @@
+=============================================================
+  ARQUIVO HISTÓRICO INTERATIVO - ESPAÇO HUMBERTO DE MARACANÃ
+  Vertex Virtualization Lab | UNDB
+  Roteiro completo de montagem no Unity
+=============================================================
+
+VERSÃO UNITY RECOMENDADA: 2022.3 LTS ou superior
+
+-------------------------------------------------------------
+ETAPA 1 - CRIAR O PROJETO
+-------------------------------------------------------------
+1. Abra o Unity Hub
+2. Clique em "New Project"
+3. Selecione o template: 3D (Core)
+4. Nome: ArquivoHistoricoVR
+5. Crie as pastas: Assets/Scripts/ | Assets/Scenes/ | Assets/Materials/ | Assets/Audio/ | Assets/Textures/
+6. Crie duas cenas: File > New Scene
+   - Salve como: MainMenu (Assets/Scenes/MainMenu.unity)
+   - Salve como: MainScene (Assets/Scenes/MainScene.unity)
+
+-------------------------------------------------------------
+ETAPA 2 - IMPORTAR OS SCRIPTS
+-------------------------------------------------------------
+1. Copie todos os arquivos .cs desta pasta para Assets/Scripts/
+2. Aguarde o Unity compilar (barra de progresso no rodapé)
+3. Se houver erro de TMPro, instale TextMeshPro:
+   Window > Package Manager > TextMeshPro > Install
+
+-------------------------------------------------------------
+ETAPA 3 - CENA DO MENU PRINCIPAL (MainMenu)
+-------------------------------------------------------------
+1. Abra a cena MainMenu
+2. Hierarchy > UI > Canvas
+   - Canvas Scaler: Scale With Screen Size | 1920x1080
+3. Adicione um Image como fundo (cor marrom escura: #2C1810)
+4. Adicione um Text (TMP) com o título: "Arquivo Histórico Interativo"
+5. Crie 3 botões filhos do Canvas:
+   - BtnJogar (texto: "Explorar o Acervo")
+   - BtnCreditos (texto: "Créditos")
+   - BtnSair (texto: "Sair")
+6. Crie um painel de créditos (GameObject vazio com Image + Text)
+   - Desative-o no Inspector (checkbox no topo)
+7. Selecione o Canvas raiz > Add Component > Canvas Group
+8. Crie um GameObject vazio chamado "GameManager"
+   - Add Component > MainMenuController
+   - Arraste menuPanel, creditsPanel e o CanvasGroup para os campos
+9. Conecte os botões:
+   - BtnJogar > OnClick() > GameManager > MainMenuController.OnPlayButton
+   - BtnCreditos > OnClick() > GameManager > MainMenuController.OnCreditsButton
+   - BtnSair > OnClick() > GameManager > MainMenuController.OnQuitButton
+
+-------------------------------------------------------------
+ETAPA 4 - AMBIENTE DA CENA PRINCIPAL (MainScene)
+-------------------------------------------------------------
+1. Abra a cena MainScene
+2. Crie o chão: GameObject > 3D Object > Plane
+   - Scale: (10, 1, 10) | Material: cor bege/madeira
+3. Crie paredes com Cubes (4 paredes ao redor)
+4. Crie o Player:
+   - GameObject vazio chamado "Player"
+   - Adicione: CharacterController
+   - Adicione: Camera como filho (posição Y: 1.6)
+   - Tag do Player: selecione "Player" no campo Tag (topo do Inspector)
+   - Adicione GrabSystem.cs ao Player
+5. Adicione Directional Light com cor amarelada (#FFF0CC)
+
+-------------------------------------------------------------
+ETAPA 5 - GAVETAS INTERATIVAS
+-------------------------------------------------------------
+Para cada gaveta (crie 3 a 5):
+1. Crie um Cube: escala (0.8, 0.15, 0.4)
+2. Adicione BoxCollider (já vem por padrão)
+3. Anote a posição atual como closedPosition (ex: 0, 0, 0)
+4. openPosition = closedPosition + (0, 0, 0.4) no eixo Z
+5. Dentro da gaveta, crie um Cube filho pequeno (o objeto histórico)
+   - Desative-o no Inspector
+6. Selecione a gaveta > Add Component > DrawerController
+7. Preencha no Inspector:
+   - Closed Position: (posição anotada)
+   - Open Position: (posição + 0.4 no Z)
+   - Item In Drawer: arraste o objeto filho
+8. Para o painel de info: veja Etapa 6
+
+-------------------------------------------------------------
+ETAPA 6 - OBJETOS HISTÓRICOS COM PAINEL
+-------------------------------------------------------------
+Para cada objeto histórico:
+1. Crie ou use o Cube dentro da gaveta
+2. Adicione BoxCollider
+3. Crie um Canvas no modo World Space acima do objeto:
+   - Hierarchy > UI > Canvas
+   - Render Mode: World Space
+   - Posicione acima do objeto (Y: +1.5)
+   - Escala: (0.01, 0.01, 0.01)
+4. Dentro do Canvas, crie:
+   - Image (fundo escuro, alpha 0.9)
+   - TextMeshPro - Text: nome do objeto
+   - TextMeshPro - Text: descrição
+   - Image: foto do objeto (importe como Sprite em Assets/Textures/)
+   - Button com texto "X" para fechar
+5. Desative o Canvas no Inspector
+6. No objeto > Add Component > HistoricalItem
+7. Preencha:
+   - Item Name: nome do artefato
+   - Description: texto histórico
+   - Item Photo: arraste o Sprite importado
+   - Info Panel: arraste o Canvas criado
+   - Name Text / Description Text / Photo Image: arraste cada elemento
+   - Close Button: arraste o botão X
+
+OBJETOS SUGERIDOS DO ACERVO:
+- Manuscrito Colonial (séc. XIX)
+- Mapa Cartográfico de São Luís (1844)
+- Carta de Alforria (1870)
+- Fotografia de Época (1920)
+- Diário de Bordo do Trapiche (1890)
+
+-------------------------------------------------------------
+ETAPA 7 - SISTEMA ANTES/DEPOIS
+-------------------------------------------------------------
+1. Selecione um objeto histórico com Renderer
+2. Crie 2 Materials em Assets/Materials/:
+   - DegradedMat: cor amarelada/gasta, Rendering Mode = Fade
+   - RestoredMat: cor original viva, Rendering Mode = Fade
+3. Adicione BeforeAfterController ao objeto
+4. Conecte degradedMaterial e restoredMaterial no Inspector
+5. Crie um botão UI (Canvas Screen Space) com texto "Ver Restaurado"
+   - Conecte ao campo toggleButton
+
+-------------------------------------------------------------
+ETAPA 8 - ÁUDIO ESPACIAL
+-------------------------------------------------------------
+1. Importe arquivos .mp3 ou .wav para Assets/Audio/
+2. Para cada objeto com narração:
+   - Add Component > Audio Source
+   - Add Component > SpatialAudioTrigger
+   - Arraste o AudioClip para narrationClip
+   - Ajuste triggerRadius (padrão: 3)
+3. No AudioSource:
+   - Spatial Blend: 1 (totalmente 3D)
+   - Play On Awake: desativado
+
+-------------------------------------------------------------
+ETAPA 9 - LAYER GRABBABLE
+-------------------------------------------------------------
+1. Edit > Project Settings > Tags and Layers
+2. Em User Layer 6 (ou outra livre): escreva "Grabbable"
+3. Selecione cada objeto histórico > Layer > Grabbable
+4. No GrabSystem (no Player) > grabbableLayer: marque "Grabbable"
+
+-------------------------------------------------------------
+ETAPA 10 - BUILD SETTINGS E TESTE
+-------------------------------------------------------------
+1. File > Build Settings
+2. Clique "Add Open Scenes" para cada cena
+   - MainMenu deve ser index 0
+   - MainScene deve ser index 1
+3. Platform: PC, Mac & Linux Standalone
+4. Clique "Build and Run"
+5. Escolha uma pasta de destino
+
+-------------------------------------------------------------
+DICA PARA VR (META QUEST / HTC VIVE)
+-------------------------------------------------------------
+- Window > Package Manager > XR Plugin Management > Install
+- Ative o provider do seu headset (Oculus / OpenXR)
+- Substitua GrabSystem pelo XR Grab Interactable
+- Os demais scripts funcionam sem alteração
+
+=============================================================
+  Breno Lucas Veras Melo | Tecnologias Emergentes | UNDB 2026
+=============================================================
