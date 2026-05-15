@@ -14,6 +14,13 @@ public class DrawerController : MonoBehaviour, IInteractable
     public float slideSpeed = 3f;
     public GameObject itemInDrawer;
 
+    [Header("Conteúdo do Artefato")]
+    [Tooltip("Preencha aqui para configurar o texto e foto do item diretamente pela gaveta.")]
+    public string itemName;
+    [TextArea(3, 10)]
+    public string description;
+    public Sprite itemPhoto;
+
     [Header("Visual")]
     public Color hoverColor = new Color(1f, 0.9f, 0.7f, 1f);
 
@@ -61,6 +68,12 @@ public class DrawerController : MonoBehaviour, IInteractable
             HistoricalItem histItem = itemInDrawer.GetComponent<HistoricalItem>();
             if (isOpen)
             {
+                if (histItem != null)
+                {
+                    if (!string.IsNullOrEmpty(itemName)) histItem.itemName = itemName;
+                    if (!string.IsNullOrEmpty(description)) histItem.description = description;
+                    if (itemPhoto != null) histItem.itemPhoto = itemPhoto;
+                }
                 itemInDrawer.SetActive(true);
                 if (histItem != null) histItem.OpenPanel();
             }
