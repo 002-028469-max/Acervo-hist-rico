@@ -1,10 +1,14 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.XR;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// Controlador do Menu Principal.
 /// Gerencia botões Jogar, Créditos e Sair com efeito de fade.
+/// Compatível com VR — detecta automaticamente se headset está ativo
+/// e pula manipulação de cursor (que não existe em VR).
 /// </summary>
 public class MainMenuController : MonoBehaviour
 {
@@ -18,9 +22,13 @@ public class MainMenuController : MonoBehaviour
     public float fadeDuration = 0.5f;
 
     private bool isTransitioning;
+    private bool isVR;
 
     void Start()
     {
+        // Detectar se VR está ativo
+        isVR = CheckVRActive();
+
         if (creditsPanel != null)
             creditsPanel.SetActive(false);
 
@@ -30,8 +38,36 @@ public class MainMenuController : MonoBehaviour
             StartCoroutine(FadeIn());
         }
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        // Cursor só existe no modo desktop — em VR não precisa
+        if (!isVR)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        if (isVR)
+            Debug.Log("🥽 [MainMenu] Modo VR ativo — cursor desabilitado, use os controles.");
+    }
+
+    /// <summary>
+    /// Verifica se um dispositivo VR está conectado e ativo.
+    /// </summary>
+    bool CheckVRActive()
+    {
+        // Método 1: XRSettings
+        if (XRSettings.isDeviceActive)
+            return true;
+
+        // Método 2: Subsistemas XR
+        var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
+        SubsystemManager.GetInstances(xrDisplaySubsystems);
+        foreach (var subsystem in xrDisplaySubsystems)
+        {
+            if (subsystem.running)
+                return true;
+        }
+
+        return false;
     }
 
     IEnumerator FadeIn()
