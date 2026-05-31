@@ -9,18 +9,19 @@ using UnityEngine.InputSystem.XR;
 /// <summary>
 /// Editor utility que cria automaticamente um XR Rig completo com
 /// mãos (controllers) e o XR Device Simulator na cena ativa.
+/// Configurado para Meta Quest via OpenXR.
 /// Acesse via menu: Acervo Histórico ▸ Configurar XR Rig + Mãos
 /// </summary>
 public static class XRRigSetup
 {
     private const string SimulatorPrefabPath =
-        "Assets/Samples/XR Interaction Toolkit/2.6.5/XR Device Simulator/XR Device Simulator.prefab";
+        "Assets/Samples/XR Interaction Toolkit/3.2.0/XR Device Simulator/XR Device Simulator.prefab";
 
     [MenuItem("Acervo Histórico/Configurar XR Rig + Mãos e Simulador")]
     public static void SetupXRRig()
     {
         // ─── 1. Desativar PlayerController antigo (se existir) ───
-        var oldPlayer = Object.FindObjectOfType<PlayerController>();
+        var oldPlayer = Object.FindAnyObjectByType<PlayerController>();
         if (oldPlayer != null)
         {
             oldPlayer.gameObject.SetActive(false);
@@ -28,7 +29,7 @@ public static class XRRigSetup
         }
 
         // ─── 2. Remover XR Rig existente (se houver) ───
-        var existingRig = Object.FindObjectOfType<XROrigin>();
+        var existingRig = Object.FindAnyObjectByType<XROrigin>();
         if (existingRig != null)
         {
             Undo.DestroyObjectImmediate(existingRig.gameObject);
@@ -106,13 +107,14 @@ public static class XRRigSetup
         EditorUtility.SetDirty(xrOrigin);
         Selection.activeGameObject = xrOrigin;
 
-        Debug.Log("✅ [XRRigSetup] XR Rig configurado com sucesso!\n" +
+        Debug.Log("✅ [XRRigSetup] XR Rig configurado para META QUEST!\n" +
                   "• Main Camera com TrackedPoseDriver\n" +
                   "• Mão esquerda com Ray Interactor\n" +
                   "• Mão direita com Ray Interactor\n" +
                   "• XR Device Simulator adicionado\n" +
                   "• Locomotion configurada\n" +
-                  "• Objetos interativos adaptados para XR");
+                  "• Objetos interativos adaptados para XR\n" +
+                  "• Plataforma: Meta Quest (OpenXR)");
     }
 
     private static GameObject CreateHandController(string name, Transform parent, bool isLeft)
@@ -126,7 +128,7 @@ public static class XRRigSetup
         // Tracked Pose Driver para rastreamento do controle
         var tpd = hand.AddComponent<TrackedPoseDriver>();
 
-        // XR Controller
+        // XR Controller (compatível com XRI 3.x)
         var controller = hand.AddComponent<ActionBasedController>();
 
         // Tentar carregar o InputActionAsset do projeto
@@ -165,7 +167,7 @@ public static class XRRigSetup
     private static void AddRayInteractor(GameObject hand, bool isLeft)
     {
         // Ray Interactor para apontar e interagir à distância
-        var ray = hand.AddComponent<XRRayInteractor>();
+        var ray = hand.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor>();
         ray.maxRaycastDistance = 10f;
 
         // Line Renderer para visualizar o raio
@@ -183,13 +185,13 @@ public static class XRRigSetup
         lineRenderer.endColor = new Color(1f, 1f, 1f, 0.3f);
 
         // XR Interactor Line Visual
-        var lineVisual = hand.AddComponent<XRInteractorLineVisual>();
+        var lineVisual = hand.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals.XRInteractorLineVisual>();
         lineVisual.lineLength = 10f;
     }
 
     private static void CreateHandVisual(GameObject hand, bool isLeft)
     {
-        // Modelo visual simples da mão (cubo representando o controle)
+        // Modelo visual simples da mão (cubo representando o controle Meta Quest)
         GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
         visual.name = isLeft ? "Left Hand Model" : "Right Hand Model";
         visual.transform.SetParent(hand.transform);
@@ -231,7 +233,7 @@ public static class XRRigSetup
     private static void SetupDeviceSimulator()
     {
         // Remover simulador existente
-        var existingSim = Object.FindObjectOfType<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator>();
+        var existingSim = Object.FindAnyObjectByType<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator>();
         if (existingSim != null)
         {
             Undo.DestroyObjectImmediate(existingSim.gameObject);
@@ -273,7 +275,7 @@ public static class XRRigSetup
     {
         int count = 0;
         // Encontrar todos os MonoBehaviours que implementam IInteractable
-        var allBehaviours = Object.FindObjectsOfType<MonoBehaviour>(true);
+        var allBehaviours = Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
 
         foreach (var behaviour in allBehaviours)
         {
@@ -304,14 +306,14 @@ public static class XRRigSetup
     [MenuItem("Acervo Histórico/Remover XR Rig")]
     public static void RemoveXRRig()
     {
-        var rig = Object.FindObjectOfType<XROrigin>();
+        var rig = Object.FindAnyObjectByType<XROrigin>();
         if (rig != null)
         {
             Undo.DestroyObjectImmediate(rig.gameObject);
             Debug.Log("[XRRigSetup] XR Rig removido.");
         }
 
-        var sim = Object.FindObjectOfType<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator>();
+        var sim = Object.FindAnyObjectByType<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator>();
         if (sim != null)
         {
             Undo.DestroyObjectImmediate(sim.gameObject);
@@ -319,7 +321,7 @@ public static class XRRigSetup
         }
 
         // Reativar PlayerController antigo
-        var players = Object.FindObjectsOfType<PlayerController>(true);
+        var players = Object.FindObjectsByType<PlayerController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var p in players)
         {
             p.gameObject.SetActive(true);

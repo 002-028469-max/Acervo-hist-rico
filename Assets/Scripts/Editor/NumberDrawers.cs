@@ -9,7 +9,7 @@ public class NumberDrawers
     public static void AddNumbersToDrawers()
     {
         // Encontra todos os controladores de gaveta na cena
-        DrawerController[] drawers = Object.FindObjectsOfType<DrawerController>();
+        DrawerController[] drawers = Object.FindObjectsByType<DrawerController>(FindObjectsSortMode.None);
         
         if (drawers.Length == 0)
         {

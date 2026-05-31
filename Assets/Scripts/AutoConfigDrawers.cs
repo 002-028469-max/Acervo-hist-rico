@@ -26,14 +26,28 @@ public class AutoConfigDrawers : MonoBehaviour
 
     public static void RunSetup()
     {
-        // Detectar se tem gavetas na cena
+        // ═══════════════════════════════════════════════════════════
+        //  SETUP VR DO MENU — roda em qualquer cena com MainMenuController
+        // ═══════════════════════════════════════════════════════════
+        var menuController = Object.FindAnyObjectByType<MainMenuController>();
+        if (menuController != null)
+        {
+            Debug.Log("[AutoConfig] Cena de menu detectada. Verificando VR...");
+            VRMenuSetup.Setup();
+            // Menu não precisa de gavetas, pode retornar
+            return;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  SETUP DAS GAVETAS — cena principal com acervo
+        // ═══════════════════════════════════════════════════════════
         bool hasDrawers = GameObject.Find("Drawer_0") != null
                        || GameObject.Find("Drawer_1") != null
                        || GameObject.Find("Gaveta_Interativa_1") != null;
 
         if (!hasDrawers)
         {
-            Debug.Log("[AutoConfig] Cena sem gavetas, pulando configuração.");
+            Debug.Log("[AutoConfig] Cena sem gavetas e sem menu, pulando configuração.");
             return;
         }
 
@@ -224,17 +238,17 @@ public class AutoConfigDrawers : MonoBehaviour
         // Por componente
         if (player == null)
         {
-            var pc = Object.FindObjectOfType<PlayerController>();
+            var pc = Object.FindAnyObjectByType<PlayerController>();
             if (pc != null) player = pc.gameObject;
         }
         if (player == null)
         {
-            var sm = Object.FindObjectOfType<SimpleXRMovement>();
+            var sm = Object.FindAnyObjectByType<SimpleXRMovement>();
             if (sm != null) player = sm.gameObject;
         }
         if (player == null)
         {
-            var cc = Object.FindObjectOfType<CharacterController>();
+            var cc = Object.FindAnyObjectByType<CharacterController>();
             if (cc != null) player = cc.gameObject;
         }
 
@@ -274,7 +288,7 @@ public class AutoConfigDrawers : MonoBehaviour
                 camGO.transform.localPosition = new Vector3(0, 1.6f, 0);
                 cam = camGO.AddComponent<Camera>();
                 cam.nearClipPlane = 0.1f;
-                if (Object.FindObjectOfType<AudioListener>() == null)
+                if (Object.FindAnyObjectByType<AudioListener>() == null)
                     camGO.AddComponent<AudioListener>();
             }
         }

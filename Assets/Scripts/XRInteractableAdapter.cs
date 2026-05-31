@@ -10,17 +10,17 @@ using UnityEngine.XR.Interaction.Toolkit;
 public class XRInteractableAdapter : MonoBehaviour
 {
     private IInteractable interactable;
-    private XRBaseInteractable xrInteractable;
+    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable xrInteractable;
 
     void Awake()
     {
         interactable = GetComponent<IInteractable>();
 
         // Adicionar XRSimpleInteractable se não existir
-        xrInteractable = GetComponent<XRBaseInteractable>();
+        xrInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
         if (xrInteractable == null)
         {
-            xrInteractable = gameObject.AddComponent<XRSimpleInteractable>();
+            xrInteractable = gameObject.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
         }
 
         // Registrar eventos
