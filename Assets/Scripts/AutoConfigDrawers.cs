@@ -29,7 +29,7 @@ public class AutoConfigDrawers : MonoBehaviour
         // ═══════════════════════════════════════════════════════════
         //  SETUP VR DO MENU — roda em qualquer cena com MainMenuController
         // ═══════════════════════════════════════════════════════════
-        var menuController = Object.FindAnyObjectByType<MainMenuController>();
+        var menuController = Object.FindObjectOfType<MainMenuController>();
         if (menuController != null)
         {
             Debug.Log("[AutoConfig] Cena de menu detectada. Verificando VR...");
@@ -238,17 +238,17 @@ public class AutoConfigDrawers : MonoBehaviour
         // Por componente
         if (player == null)
         {
-            var pc = Object.FindAnyObjectByType<PlayerController>();
+            var pc = Object.FindObjectOfType<PlayerController>();
             if (pc != null) player = pc.gameObject;
         }
         if (player == null)
         {
-            var sm = Object.FindAnyObjectByType<SimpleXRMovement>();
+            var sm = Object.FindObjectOfType<SimpleXRMovement>();
             if (sm != null) player = sm.gameObject;
         }
         if (player == null)
         {
-            var cc = Object.FindAnyObjectByType<CharacterController>();
+            var cc = Object.FindObjectOfType<CharacterController>();
             if (cc != null) player = cc.gameObject;
         }
 
@@ -288,7 +288,7 @@ public class AutoConfigDrawers : MonoBehaviour
                 camGO.transform.localPosition = new Vector3(0, 1.6f, 0);
                 cam = camGO.AddComponent<Camera>();
                 cam.nearClipPlane = 0.1f;
-                if (Object.FindAnyObjectByType<AudioListener>() == null)
+                if (Object.FindObjectOfType<AudioListener>() == null)
                     camGO.AddComponent<AudioListener>();
             }
         }

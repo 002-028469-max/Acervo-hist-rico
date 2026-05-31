@@ -12,7 +12,6 @@ using System.Collections.Generic;
 /// Configura automaticamente a cena do Menu Principal para funcionar em VR.
 /// Detecta se um headset VR está conectado e converte o Canvas de Screen Space
 /// para World Space, criando um XR Rig com Ray Interactors para interação.
-/// Compatível com Meta Quest via OpenXR (Unity 6).
 /// Se VR não estiver ativo, não faz nada (menu funciona normal com mouse).
 /// </summary>
 public class VRMenuSetup : MonoBehaviour
@@ -29,7 +28,7 @@ public class VRMenuSetup : MonoBehaviour
             return;
         }
 
-        Debug.Log("🥽 [VRMenuSetup] VR DETECTADO (Meta Quest)! Configurando menu para realidade virtual...");
+        Debug.Log("🥽 [VRMenuSetup] VR DETECTADO! Configurando menu para realidade virtual...");
 
         // Criar XR Rig para a cena do menu
         GameObject xrRig = SetupXRRig();
@@ -40,12 +39,12 @@ public class VRMenuSetup : MonoBehaviour
         // Configurar EventSystem para XR
         SetupXREventSystem();
 
-        Debug.Log("✅ [VRMenuSetup] Menu VR configurado! Use os controles Meta Quest para apontar e selecionar.");
+        Debug.Log("✅ [VRMenuSetup] Menu VR configurado! Use os controles para apontar e selecionar.");
     }
 
     /// <summary>
     /// Detecta se um dispositivo VR está ativo.
-    /// Funciona com Meta Quest 2, Quest 3, Quest Pro via OpenXR.
+    /// Funciona com qualquer headset (Meta Quest, HTC Vive, Windows MR, etc.)
     /// </summary>
     static bool IsVRActive()
     {
@@ -55,7 +54,7 @@ public class VRMenuSetup : MonoBehaviour
 
         // Método 2: Verificar dispositivos XR conectados
         var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
-        SubsystemManager.GetSubsystems(xrDisplaySubsystems);
+        SubsystemManager.GetInstances(xrDisplaySubsystems);
         foreach (var subsystem in xrDisplaySubsystems)
         {
             if (subsystem.running)
@@ -72,7 +71,7 @@ public class VRMenuSetup : MonoBehaviour
     static GameObject SetupXRRig()
     {
         // Verificar se já existe um XR Rig
-        var existingRig = Object.FindAnyObjectByType<XROrigin>();
+        var existingRig = Object.FindObjectOfType<XROrigin>();
         if (existingRig != null)
         {
             Debug.Log("[VRMenuSetup] XR Rig já existe na cena.");
@@ -124,11 +123,11 @@ public class VRMenuSetup : MonoBehaviour
         xrOrigin.Camera = cameraGO.GetComponent<Camera>();
 
         // AudioListener
-        if (Object.FindAnyObjectByType<AudioListener>() == null)
+        if (Object.FindObjectOfType<AudioListener>() == null)
             cameraGO.AddComponent<AudioListener>();
 
         // ══════════════════════════════════════════════
-        //  Controles Meta Quest (Ray Interactors para UI)
+        //  Controles (Ray Interactors para UI)
         // ══════════════════════════════════════════════
 
         // Mão Direita
@@ -140,18 +139,18 @@ public class VRMenuSetup : MonoBehaviour
             false, new Color(1f, 0.4f, 0.2f));
 
         // XR Interaction Manager (necessário para os interactors)
-        if (Object.FindAnyObjectByType<XRInteractionManager>() == null)
+        if (Object.FindObjectOfType<XRInteractionManager>() == null)
         {
             new GameObject("XR Interaction Manager").AddComponent<XRInteractionManager>();
         }
 
-        Debug.Log("🎮 [VRMenuSetup] XR Rig criado com Ray Interactors para menu (Meta Quest).");
+        Debug.Log("🎮 [VRMenuSetup] XR Rig criado com Ray Interactors para menu.");
         return rigGO;
     }
 
     /// <summary>
     /// Cria um controle de mão com XR Ray Interactor para apontar na UI.
-    /// Compatível com XR Interaction Toolkit 3.x e Meta Quest controllers.
+    /// Usa ActionBasedController (compatível com XR Interaction Toolkit 2.x).
     /// </summary>
     static void CreateHandController(Transform parent, string name, bool isRight, Color rayColor)
     {
@@ -161,14 +160,14 @@ public class VRMenuSetup : MonoBehaviour
             ? new Vector3(0.2f, 1.3f, 0.4f)
             : new Vector3(-0.2f, 1.3f, 0.4f);
 
-        // TrackedPoseDriver para rastreamento do controle Meta Quest
+        // TrackedPoseDriver para rastreamento do controle
         controllerGO.AddComponent<TrackedPoseDriver>();
 
-        // ActionBasedController (compatível com XR Interaction Toolkit 3.x)
+        // ActionBasedController (API correta do XR Interaction Toolkit 2.6.5)
         controllerGO.AddComponent<ActionBasedController>();
 
         // Ray Interactor (para apontar nos botões da UI)
-        var rayInteractor = controllerGO.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor>();
+        var rayInteractor = controllerGO.AddComponent<XRRayInteractor>();
         rayInteractor.maxRaycastDistance = 20f;
 
         // Line Renderer (visual do raio)
@@ -191,18 +190,18 @@ public class VRMenuSetup : MonoBehaviour
         lineRenderer.endColor = new Color(1f, 1f, 1f, 0.3f);
 
         // XR Interactor Line Visual (visual mais bonito do raio)
-        var lineVisual = controllerGO.AddComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals.XRInteractorLineVisual>();
+        var lineVisual = controllerGO.AddComponent<XRInteractorLineVisual>();
         lineVisual.lineLength = 10f;
     }
 
     /// <summary>
     /// Encontra todos os Canvas na cena e converte de Screen Space para World Space.
     /// Posiciona o Canvas na frente do jogador para que seja visível no VR.
-    /// Adiciona TrackedDeviceGraphicRaycaster para interação com controles Meta Quest.
+    /// Adiciona TrackedDeviceGraphicRaycaster para interação com controles XR.
     /// </summary>
     static void ConvertCanvasToWorldSpace(GameObject xrRig)
     {
-        Canvas[] allCanvas = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        Canvas[] allCanvas = Object.FindObjectsOfType<Canvas>(true);
 
         foreach (var canvas in allCanvas)
         {
@@ -239,7 +238,7 @@ public class VRMenuSetup : MonoBehaviour
             if (oldRaycaster != null)
                 Object.Destroy(oldRaycaster);
 
-            // Adicionar TrackedDeviceGraphicRaycaster (funciona com controles Meta Quest)
+            // Adicionar TrackedDeviceGraphicRaycaster (funciona com controles XR)
             if (canvas.GetComponent<TrackedDeviceGraphicRaycaster>() == null)
                 canvas.gameObject.AddComponent<TrackedDeviceGraphicRaycaster>();
 
@@ -252,11 +251,11 @@ public class VRMenuSetup : MonoBehaviour
 
     /// <summary>
     /// Substitui o StandaloneInputModule padrão pelo XRUIInputModule
-    /// para que o EventSystem processe inputs dos controles Meta Quest.
+    /// para que o EventSystem processe inputs dos controles VR.
     /// </summary>
     static void SetupXREventSystem()
     {
-        EventSystem eventSystem = Object.FindAnyObjectByType<EventSystem>();
+        EventSystem eventSystem = Object.FindObjectOfType<EventSystem>();
 
         if (eventSystem == null)
         {
@@ -273,7 +272,7 @@ public class VRMenuSetup : MonoBehaviour
             Debug.Log("[VRMenuSetup] StandaloneInputModule removido.");
         }
 
-        // Adicionar XRUIInputModule (processa inputs de controles Meta Quest)
+        // Adicionar XRUIInputModule (processa inputs de controles VR)
         if (eventSystem.GetComponent<XRUIInputModule>() == null)
         {
             eventSystem.gameObject.AddComponent<XRUIInputModule>();

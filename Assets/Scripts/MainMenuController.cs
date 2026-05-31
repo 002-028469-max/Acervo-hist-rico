@@ -60,7 +60,7 @@ public class MainMenuController : MonoBehaviour
 
         // Método 2: Subsistemas XR
         var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
-        SubsystemManager.GetSubsystems(xrDisplaySubsystems);
+        SubsystemManager.GetInstances(xrDisplaySubsystems);
         foreach (var subsystem in xrDisplaySubsystems)
         {
             if (subsystem.running)
